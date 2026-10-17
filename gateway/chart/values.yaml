@@ -1,0 +1,31 @@
+image:
+  repository: gateway
+  tag: "0.1.0"
+  pullPolicy: IfNotPresent
+
+# Secrets: never put real values here. Pass them with --set at install time.
+admin:
+  email: admin@example.com
+  password: ""
+sessionSecret: ""
+
+# Pre-registers the WooCommerce MCP server as the first upstream.
+seedWooUrl: http://mcp-woo.store.svc.cluster.local:8000/mcp
+
+timeouts:
+  list: "5"
+  call: "30"
+  refreshInterval: "15"
+
+storage:
+  size: 1Gi
+  className: ""   # empty = the cluster's default StorageClass
+
+ingress:
+  enabled: true
+  className: traefik
+  host: dashboard.localhost
+
+resources:
+  requests: { cpu: 100m, memory: 128Mi }
+  limits: { cpu: 500m, memory: 512Mi }

@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate   # one ReadWriteOnce volume holds the SQLite file
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: gateway
+  template:
+    metadata:
+      labels:
+        # The MCP server's NetworkPolicy admits only pods with exactly this label,
+        # running in the "gateway" namespace.
+        app.kubernetes.io/name: gateway
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        fsGroup: 10001
+      containers:
+        - name: gateway
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - containerPort: 8000
+          env:
+            - name: ADMIN_EMAIL
+              value: {{ .Values.admin.email | quote }}
+            - name: SEED_WOO_URL
+              value: {{ .Values.seedWooUrl | quote }}
+            - name: LIST_TIMEOUT
+              value: {{ .Values.timeouts.list | quote }}
+            - name: CALL_TIMEOUT
+              value: {{ .Values.timeouts.call | quote }}
+            - name: REFRESH_INTERVAL
+              value: {{ .Values.timeouts.refreshInterval | quote }}
+          envFrom:
+            - secretRef:
+                name: {{ .Release.Name }}
+          volumeMounts:
+            - name: data
+              mountPath: /data
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 3
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8000
+            initialDelaySeconds: 20
+            periodSeconds: 20
+            timeoutSeconds: 3
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: {{ .Release.Name }}-data

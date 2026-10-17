@@ -1,0 +1,15 @@
+[project]
+name = "gateway"
+version = "0.1.0"
+description = "Team MCP gateway: one MCP endpoint over many upstream MCP servers"
+requires-python = ">=3.12"
+dependencies = [
+    "mcp<2",
+    "fastapi",
+    "uvicorn",
+    "httpx",
+]
+
+[tool.uv]
+# An application, not a library: install dependencies only, never build "gateway" as a package.
+package = false
