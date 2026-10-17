@@ -1,0 +1,13 @@
+mysql:
+  image: mysql:8.0
+  database: wordpress
+  user: wp
+  rootPassword: ""
+  password: ""
+  storage: 2Gi
+wordpress:
+  image: wordpress:6-apache
+  storage: 2Gi
+ingress:
+  className: traefik
+  host: store.localhost
