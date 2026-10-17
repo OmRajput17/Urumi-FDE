@@ -7,7 +7,10 @@ authors = [
     { name = "OmRajput17", email = "rajputom2408@gmail.com" }
 ]
 requires-python = ">=3.12"
-dependencies = []
+dependencies = [
+    "httpx>=0.28.1",
+    "mcp<2",
+]
 
 [project.scripts]
 mcp-woo = "mcp_woo:main"
