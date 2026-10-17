@@ -1,0 +1,11 @@
+image:
+  repository: mcp-woo
+  tag: "0.1.0"
+  pullPolicy: IfNotPresent
+wc:
+  baseUrl: http://store-wordpress
+  key: ""
+  secret: ""
+gateway:
+  namespace: gateway
+  podLabel: gateway

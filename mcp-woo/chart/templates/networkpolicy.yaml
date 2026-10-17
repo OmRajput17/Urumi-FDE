@@ -1,0 +1,19 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ .Release.Name }}-only-gateway
+spec:
+  podSelector:
+    matchLabels:
+      app: {{ .Release.Name }}
+  policyTypes: ["Ingress"]
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: {{ .Values.gateway.namespace }}
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: {{ .Values.gateway.podLabel }}
+      ports:
+        - port: 8000
