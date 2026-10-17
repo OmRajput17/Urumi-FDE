@@ -1,0 +1,13 @@
+[project]
+name = "mcp-extras"
+version = "0.1.0"
+description = "Two small upstream MCP servers for the gateway: utils (time, math) and notes (bearer-protected)"
+requires-python = ">=3.12"
+dependencies = [
+    "mcp<2",
+    "uvicorn",
+    "tzdata",
+]
+
+[tool.uv]
+package = false

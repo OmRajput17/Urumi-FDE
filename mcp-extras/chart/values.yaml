@@ -1,0 +1,16 @@
+image:
+  repository: mcp-extras
+  tag: "0.1.0"
+  pullPolicy: IfNotPresent
+
+# Bearer token the notes server requires. Never commit a real value: pass it with --set.
+notesToken: ""
+
+# Only pods with this label, in this namespace, may call the extra servers.
+gateway:
+  namespace: gateway
+  podLabel: gateway
+
+resources:
+  requests: { cpu: 50m, memory: 64Mi }
+  limits: { cpu: 300m, memory: 192Mi }
