@@ -12,6 +12,14 @@ sessionSecret: ""
 # Pre-registers the WooCommerce MCP server as the first upstream.
 seedWooUrl: http://mcp-woo.store.svc.cluster.local:8000/mcp
 
+# Chat agent. Any OpenAI-compatible API works; the defaults point at Groq.
+# apiKey is a secret: pass it with --set llm.apiKey=... (empty switches the chat agent off).
+llm:
+  baseUrl: https://api.groq.com/openai/v1
+  model: llama-3.3-70b-versatile
+  apiKey: ""
+  maxSteps: "6"
+
 timeouts:
   list: "5"
   call: "30"

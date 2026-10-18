@@ -31,6 +31,12 @@ spec:
               value: {{ .Values.admin.email | quote }}
             - name: SEED_WOO_URL
               value: {{ .Values.seedWooUrl | quote }}
+            - name: LLM_BASE_URL
+              value: {{ .Values.llm.baseUrl | quote }}
+            - name: LLM_MODEL
+              value: {{ .Values.llm.model | quote }}
+            - name: AGENT_MAX_STEPS
+              value: {{ .Values.llm.maxSteps | quote }}
             - name: LIST_TIMEOUT
               value: {{ .Values.timeouts.list | quote }}
             - name: CALL_TIMEOUT

@@ -28,3 +28,12 @@ LIST_TIMEOUT = float(_get("LIST_TIMEOUT", "5"))
 CALL_TIMEOUT = float(_get("CALL_TIMEOUT", "30"))
 # How often the background loop re-checks every enabled upstream.
 REFRESH_INTERVAL = float(_get("REFRESH_INTERVAL", "15"))
+
+# Chat agent: any OpenAI-compatible chat API. Defaults point at Groq.
+# The key comes from a Kubernetes Secret. Empty means the chat agent is switched off.
+LLM_BASE_URL = _get("LLM_BASE_URL", "https://api.groq.com/openai/v1").rstrip("/")
+LLM_MODEL = _get("LLM_MODEL", "llama-3.3-70b-versatile")
+LLM_API_KEY = _get("LLM_API_KEY", "")
+LLM_TIMEOUT = float(_get("LLM_TIMEOUT", "60"))
+# Most tool-call rounds the agent may make for one question.
+AGENT_MAX_STEPS = int(_get("AGENT_MAX_STEPS", "6"))

@@ -4,7 +4,7 @@ import re
 from fastapi import APIRouter, Depends, Header, HTTPException
 from pydantic import BaseModel
 
-from . import core, db, security
+from . import agent, core, db, security
 
 router = APIRouter(prefix="/api")
 
@@ -265,6 +265,38 @@ def revoke_key(key_id: int, user: dict = Depends(current_user)):
     if not key or (key["user_id"] != user["id"] and user["role"] != "admin"):
         raise HTTPException(404, "No such key")
     db.execute("UPDATE api_keys SET revoked_at = COALESCE(revoked_at, ?) WHERE id = ?", (db.now(), key_id))
+
+
+# ---------- chat agent ----------
+
+class ChatMessage(BaseModel):
+    role: str
+    content: str
+
+
+class ChatBody(BaseModel):
+    messages: list[ChatMessage]
+
+
+@router.get("/chat/status")
+def chat_status(user: dict = Depends(current_user)):
+    return {"enabled": agent.configured()}
+
+
+@router.post("/chat")
+async def chat(body: ChatBody, user: dict = Depends(current_user)):
+    """Run one chat turn as the logged-in user. Tool calls are audited under that user."""
+    if not agent.configured():
+        raise HTTPException(503, "The chat agent is not configured. Set llm.apiKey in the Helm values.")
+    history = body.messages[-20:]
+    if not history or history[-1].role != "user":
+        raise HTTPException(422, "The last message must be from the user")
+    if any(m.role not in ("user", "assistant") or len(m.content) > 4000 for m in history):
+        raise HTTPException(422, "Messages must be user or assistant text under 4000 characters")
+    try:
+        return await agent.run(user, [{"role": m.role, "content": m.content} for m in history])
+    except agent.AgentError as exc:
+        raise HTTPException(502, str(exc)) from None
 
 
 # ---------- audit log ----------
