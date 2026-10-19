@@ -37,12 +37,16 @@ async def current_time(timezone: str = "UTC") -> str:
 
 
 @mcp.tool()
-async def start_of_today(timezone: str = "UTC") -> str:
-    """Midnight at the start of today in an IANA timezone, as ISO 8601 without an offset
-    (for example 2026-10-17T00:00:00). Use it as created_after when asking the store for
-    today's orders. The store keeps its clock in UTC, so pass 'UTC' for store queries."""
+async def start_of_today(timezone: str = "UTC", days_ago: int = 0) -> str:
+    """Midnight at the start of a day in an IANA timezone, as ISO 8601 without an offset
+    (for example 2026-10-17T00:00:00). days_ago=0 is today, 1 is yesterday, and so on.
+    Use it for created_after / created_before when asking the store for orders.
+    The store keeps its clock in UTC, so pass 'UTC' for store queries."""
+    if not 0 <= days_ago <= 3650:
+        raise ValueError("days_ago must be between 0 and 3650.")
     now = datetime.datetime.now(_zone(timezone))
-    return now.replace(hour=0, minute=0, second=0, microsecond=0).strftime("%Y-%m-%dT%H:%M:%S")
+    day = now.replace(hour=0, minute=0, second=0, microsecond=0) - datetime.timedelta(days=days_ago)
+    return day.strftime("%Y-%m-%dT%H:%M:%S")
 
 
 _OPS = {

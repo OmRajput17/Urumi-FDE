@@ -1,0 +1,6 @@
+# Local kind cluster.
+ingress:
+  host: dashboard.localhost
+  className: traefik
+  tls:
+    enabled: false

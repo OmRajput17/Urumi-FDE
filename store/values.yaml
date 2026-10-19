@@ -2,12 +2,21 @@ mysql:
   image: mysql:8.0
   database: wordpress
   user: wp
-  rootPassword: ""
-  password: ""
+  rootPassword: ""   # secret: pass with --set at install time
+  password: ""       # secret: pass with --set at install time
   storage: 2Gi
 wordpress:
   image: wordpress:6-apache
   storage: 2Gi
+
+# Empty = the cluster's default StorageClass. Changing it on an existing install is not
+# possible (a PVC's class is fixed), so set it on first install only.
+storageClassName: ""
+
 ingress:
   className: traefik
   host: store.localhost
+  annotations: {}      # for example cert-manager.io/cluster-issuer: letsencrypt-prod
+  tls:
+    enabled: false
+    secretName: store-tls

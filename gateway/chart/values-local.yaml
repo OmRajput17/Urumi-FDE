@@ -1,0 +1,9 @@
+# Local kind cluster. Secrets are NOT here; pass them at install time with --set.
+ingress:
+  host: dashboard.localhost
+  className: traefik
+  tls:
+    enabled: false
+storage:
+  className: ""       # kind's default StorageClass (local-path)
+  size: 1Gi

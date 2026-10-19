@@ -1,0 +1,12 @@
+# Production-like VPS (k3s). Requires cert-manager with a ClusterIssuer named letsencrypt-prod.
+image:
+  repository: ghcr.io/YOUR_GITHUB_USER/dashboard
+  tag: "0.1.0"
+ingress:
+  host: gateway.example.com          # CHANGE: must match the gateway chart's host
+  className: traefik
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+  tls:
+    enabled: true
+    secretName: dashboard-tls        # cert-manager creates this Secret

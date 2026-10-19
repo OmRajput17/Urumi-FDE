@@ -16,7 +16,7 @@ seedWooUrl: http://mcp-woo.store.svc.cluster.local:8000/mcp
 # apiKey is a secret: pass it with --set llm.apiKey=... (empty switches the chat agent off).
 llm:
   baseUrl: https://api.groq.com/openai/v1
-  model: llama-3.3-70b-versatile
+  model: openai/gpt-oss-120b
   apiKey: ""
   maxSteps: "6"
 
@@ -33,6 +33,10 @@ ingress:
   enabled: true
   className: traefik
   host: dashboard.localhost
+  annotations: {}      # for example cert-manager.io/cluster-issuer: letsencrypt-prod
+  tls:
+    enabled: false
+    secretName: dashboard-tls
 
 resources:
   requests: { cpu: 100m, memory: 128Mi }

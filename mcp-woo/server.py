@@ -93,13 +93,21 @@ async def create_product(name: str, regular_price: str) -> dict:
 
 
 @mcp.tool()
-async def list_orders(status: str = "any", created_after: str = "", per_page: int = 20) -> list[dict]:
-    """List orders, newest first. status can be 'any' or an order status like
-    'processing'. created_after is an ISO 8601 datetime, e.g. 2026-10-17T00:00:00,
-    to get only orders placed since then (use it for 'today')."""
+async def list_orders(
+    status: str = "any",
+    created_after: str = "",
+    created_before: str = "",
+    per_page: int = 20,
+) -> list[dict]:
+    """List orders, newest first. status can be 'any' or an order status like 'processing'.
+    created_after and created_before are ISO 8601 datetimes in UTC, e.g. 2026-10-17T00:00:00.
+    For 'today' pass only created_after. For 'yesterday' pass both: created_after is the
+    start of yesterday and created_before is the start of today."""
     params = {"status": status, "per_page": per_page, "orderby": "date", "order": "desc"}
     if created_after:
         params["after"] = created_after
+    if created_before:
+        params["before"] = created_before
     return [trim_order(o) for o in await wc("GET", "/orders", params=params)]
 
 

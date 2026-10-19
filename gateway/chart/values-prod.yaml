@@ -1,0 +1,17 @@
+# Production-like VPS (k3s). Change the host, the image repository and the issuer name.
+# Secrets are NOT here; pass them at install time with --set (see the README).
+image:
+  repository: ghcr.io/YOUR_GITHUB_USER/gateway
+  tag: "0.1.0"
+ingress:
+  host: gateway.example.com          # CHANGE: your real domain, pointing at the VPS
+  className: traefik                 # k3s ships Traefik
+  tls:
+    enabled: true
+    secretName: dashboard-tls        # same secret as the dashboard (it requests the certificate)
+storage:
+  className: local-path              # k3s default StorageClass
+  size: 5Gi
+resources:
+  requests: { cpu: 100m, memory: 256Mi }
+  limits: { cpu: 1, memory: 1Gi }

@@ -1,0 +1,15 @@
+# Production-like VPS (k3s). Requires cert-manager with a ClusterIssuer named letsencrypt-prod.
+# Passwords are NOT here; pass them with --set at install time.
+ingress:
+  host: store.example.com            # CHANGE: your real store domain, pointing at the VPS
+  className: traefik                 # k3s ships Traefik
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+  tls:
+    enabled: true
+    secretName: store-tls
+storageClassName: local-path         # k3s default; set on first install only
+mysql:
+  storage: 10Gi
+wordpress:
+  storage: 10Gi

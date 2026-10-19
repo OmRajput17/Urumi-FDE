@@ -1,0 +1,11 @@
+# Local kind cluster. Passwords are NOT here; pass them with --set mysql.rootPassword=... --set mysql.password=...
+ingress:
+  host: store.localhost
+  className: traefik
+  tls:
+    enabled: false
+storageClassName: ""     # kind's default (local-path)
+mysql:
+  storage: 2Gi
+wordpress:
+  storage: 2Gi
