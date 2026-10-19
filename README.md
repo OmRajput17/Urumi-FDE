@@ -5,6 +5,13 @@ A WooCommerce store, an MCP server for it, and a **team MCP gateway** with a das
 * Design and tradeoffs: [docs/DESIGN.md](docs/DESIGN.md)
 * Threat model: [docs/THREAT_MODEL.md](docs/THREAT_MODEL.md)
 
+Repository: https://github.com/OmRajput17/Urumi-FDE
+
+```bash
+git clone https://github.com/OmRajput17/Urumi-FDE.git
+cd Urumi-FDE
+```
+
 ## What is in the repo
 
 | Folder | What it is |
@@ -39,7 +46,7 @@ helm repo add traefik https://traefik.github.io/charts
 helm install traefik traefik/traefik -n traefik --create-namespace -f traefik-values.yaml
 
 # 2. Store (choose your own passwords)
-helm install store ./store -n store --create-namespace \
+helm install store ./store -n store --create-namespace -f store/values-local.yaml \
   --set mysql.rootPassword=CHANGE_ME --set mysql.password=CHANGE_ME_TOO
 ```
 
@@ -60,9 +67,9 @@ kind load docker-image mcp-woo:0.1.1 mcp-extras:0.1.1 gateway:0.1.0 dashboard:0.
 
 # 4. Install the rest. Gateway namespace first, so the NetworkPolicies have a target.
 kubectl create namespace gateway
-helm install mcp-woo ./mcp-woo/chart -n store --set image.tag=0.1.1 \
+helm install mcp-woo ./mcp-woo/chart -n store -f mcp-woo/chart/values-local.yaml \
   --set wc.key=ck_XXX --set wc.secret=cs_XXX
-helm install mcp-extras ./mcp-extras/chart -n extras --create-namespace --set image.tag=0.1.1 \
+helm install mcp-extras ./mcp-extras/chart -n extras --create-namespace -f mcp-extras/chart/values-local.yaml \
   --set notesToken=CHANGE_ME
 helm install gateway ./gateway/chart -n gateway -f gateway/chart/values-local.yaml \
   --set admin.password=CHANGE_ME --set sessionSecret=CHANGE_ME_LONG_RANDOM \
@@ -74,12 +81,14 @@ kubectl get pods -A     # everything should become Running
 
 Secrets are passed with `--set` and live in Kubernetes Secrets. Nothing secret is in the repo.
 
-Sign in at http://dashboard.localhost/ as `admin@example.com` with the admin password you chose. The WooCommerce server is already registered. Add the others under **Servers → Add server**:
+**5. Register the other two upstream servers (required for the two-server flow).** Only WooCommerce is registered automatically. Sign in at http://dashboard.localhost/ as `admin@example.com` with the admin password you chose, then **Servers → Add server** twice:
 
 | Slug | URL | Credential |
 |---|---|---|
 | `utils` | `http://utils.extras.svc.cluster.local:8000/mcp` | none |
-| `notes` | `http://notes.extras.svc.cluster.local:8000/mcp` | Bearer token = your `notesToken` |
+| `notes` | `http://notes.extras.svc.cluster.local:8000/mcp` | Auth type Bearer, token = your `notesToken` |
+
+All three should show **Connected**; with that done you have three upstream servers.
 
 ## Use it
 
@@ -118,7 +127,15 @@ The same charts, with `values-prod.yaml`.
 1. **Server.** A Linux VPS with ports 80 and 443 open. Install k3s: `curl -sfL https://get.k3s.io | sh -`. k3s already ships **Traefik** and the **local-path** StorageClass, so skip the Traefik install.
 2. **DNS.** Point two A records at the VPS: the store (for example `store.example.com`) and the gateway/dashboard (for example `gateway.example.com`).
 3. **TLS (optional but recommended).** Install cert-manager and create a `ClusterIssuer` named `letsencrypt-prod`. The prod values use it.
-4. **Images.** Push the four images to a registry (for example `ghcr.io/YOUR_USER/...`) and set `image.repository` in each `values-prod.yaml`, or import them on the node: `docker save gateway:0.1.0 | sudo k3s ctr images import -`.
+4. **Images.** Push the four images to GitHub Container Registry (the prod values already point at `ghcr.io/omrajput17/...`). Create a personal access token with `write:packages`, then:
+   ```bash
+   echo YOUR_TOKEN | docker login ghcr.io -u OmRajput17 --password-stdin
+   docker tag gateway:0.1.0    ghcr.io/omrajput17/gateway:0.1.0    && docker push ghcr.io/omrajput17/gateway:0.1.0
+   docker tag dashboard:0.1.0  ghcr.io/omrajput17/dashboard:0.1.0  && docker push ghcr.io/omrajput17/dashboard:0.1.0
+   docker tag mcp-woo:0.1.1    ghcr.io/omrajput17/mcp-woo:0.1.1    && docker push ghcr.io/omrajput17/mcp-woo:0.1.1
+   docker tag mcp-extras:0.1.1 ghcr.io/omrajput17/mcp-extras:0.1.1 && docker push ghcr.io/omrajput17/mcp-extras:0.1.1
+   ```
+   Make the packages public on GitHub (Package settings), or add an image pull secret. Without a registry you can instead import on the node: `docker save gateway:0.1.0 | sudo k3s ctr images import -`.
 5. **Install** exactly as in the local steps, but use `-f <chart>/values-prod.yaml` and your real secrets. Install the **store first and fresh**, because WordPress stores its address in the database at setup, so it must be installed under the real domain.
 
 ### What changes between local and VPS (all in values)
@@ -143,6 +160,15 @@ helm rollback gateway 3 -n gateway       # go back to revision 3
 ```
 
 `--reuse-values` keeps the secrets you set at install time. To ship a new image, build it with a new tag, load or push it, then `helm upgrade ... --set image.tag=NEW`. A rollback restores the previous chart and image. **Data is not rolled back**: the store database, WordPress files and the gateway's SQLite file stay as they are, so back them up before an upgrade that changes data.
+
+## Stand-out items
+
+| Item | Status |
+|---|---|
+| Production-like VPS deployment | **Prepared, not deployed.** Same charts with `values-prod.yaml` (domains, TLS via cert-manager, `local-path` storage, registry images) and the steps above. Not run on a real VPS. |
+| Tool permissions per role | Not built. Listed as the next step in the threat model. |
+| TLS with cert-manager | Configured in the prod values; not exercised. |
+| Upgrade and rollback with Helm | Documented, and `helm upgrade` was used throughout; a rollback was not demonstrated. |
 
 ## Known limits
 

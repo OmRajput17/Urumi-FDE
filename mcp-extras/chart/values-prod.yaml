@@ -1,0 +1,5 @@
+# Production-like VPS (k3s). The notes token is NOT here: pass it with --set notesToken=...
+image:
+  repository: ghcr.io/omrajput17/mcp-extras   # CHANGE: your registry
+  tag: "0.1.1"
+  pullPolicy: IfNotPresent

@@ -54,3 +54,20 @@ A team MCP gateway on Kubernetes. Teammates point their MCP client (Claude Code,
 | No rate limiting or lockout | Out of time budget | Password guessing is possible | Per-IP and per-account limits at Traefik or in the app |
 | Admin may register any URL | Flexible | SSRF: an admin could point the gateway at internal addresses | Allow-list of hosts or namespaces |
 | Tool arguments are passed as the model wrote them | Keeps the agent general | A confused model could change an order status | Confirmation step for write tools, per-role tool permissions |
+
+## What changes for production
+
+Same charts, different values (`values-local.yaml` versus `values-prod.yaml` in each chart). Nothing in the templates changes.
+
+| Area | Local (kind) | Production (k3s VPS) |
+|---|---|---|
+| DNS | `*.localhost` resolves to 127.0.0.1, no setup | Two A records at the VPS: the store domain and the gateway/dashboard domain |
+| Ingress | Traefik installed with Helm, kind maps ports 80/443 | Traefik is built into k3s; `ingress.className: traefik` stays the same, only `ingress.host` changes |
+| TLS | none | cert-manager with a Let's Encrypt ClusterIssuer; the dashboard Ingress carries the `cert-manager.io/cluster-issuer` annotation and `tls.secretName`, and the gateway Ingress reuses the same Secret |
+| Storage class | cluster default (`standard`, a local-path provisioner) | `local-path`, set once at first install (a PVC's class cannot change), larger volumes (10Gi store, 5Gi gateway) |
+| Images | built locally and loaded with `kind load` | pushed to a registry (ghcr.io) and pulled, or imported on the node |
+| Secrets | `--set` at install into Kubernetes Secrets | the same mechanism, values taken from the operator's shell or a secret manager; nothing secret is in git or in a values file. Sealed Secrets or an external secret store is the next step |
+| WordPress address | `store.localhost` | install the store fresh under the real domain, because WordPress records its address in its database at setup |
+| Resources | small requests and limits | gateway raised to 256Mi to 1Gi memory |
+
+Upgrades use `helm upgrade --reuse-values` and rollbacks use `helm rollback`. A rollback restores the chart and image, not data, so back up the database and volumes before an upgrade that changes data.

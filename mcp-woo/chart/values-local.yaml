@@ -1,0 +1,8 @@
+# Local kind cluster. The WooCommerce key and secret are NOT here:
+# pass them with --set wc.key=... --set wc.secret=...
+image:
+  repository: mcp-woo
+  tag: "0.1.1"
+  pullPolicy: IfNotPresent     # the image is loaded into kind with "kind load docker-image"
+wc:
+  baseUrl: http://store-wordpress     # the store's Service, inside the same namespace

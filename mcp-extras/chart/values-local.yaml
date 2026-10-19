@@ -1,0 +1,5 @@
+# Local kind cluster. The notes token is NOT here: pass it with --set notesToken=...
+image:
+  repository: mcp-extras
+  tag: "0.1.1"
+  pullPolicy: IfNotPresent     # loaded into kind with "kind load docker-image"

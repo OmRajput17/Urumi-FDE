@@ -1,7 +1,7 @@
 # Production-like VPS (k3s). Change the host, the image repository and the issuer name.
 # Secrets are NOT here; pass them at install time with --set (see the README).
 image:
-  repository: ghcr.io/YOUR_GITHUB_USER/gateway
+  repository: ghcr.io/omrajput17/gateway
   tag: "0.1.0"
 ingress:
   host: gateway.example.com          # CHANGE: your real domain, pointing at the VPS

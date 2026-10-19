@@ -1,0 +1,7 @@
+# Production-like VPS (k3s). The WooCommerce key and secret are NOT here: pass them with --set.
+image:
+  repository: ghcr.io/omrajput17/mcp-woo   # CHANGE: your registry
+  tag: "0.1.1"
+  pullPolicy: IfNotPresent
+wc:
+  baseUrl: http://store-wordpress     # still the in-cluster Service; the public domain is not used here
